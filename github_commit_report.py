@@ -10,10 +10,13 @@ import json
 
 class GithubContext(object):
     """ This class allow to access commit info from github.
+
     Uses  API https://developer.github.com/v3/
+    To access the github you need to generate access token and export
+    environment variable GITHUB_TOKEN=<your_access_token>
+
     """
-    def __init__(self, base_url, repo_owner, repo_name, repo_branch, commit_history=5, 
-                 ,verbosity=0):
+    def __init__(self, base_url, repo_owner, repo_name, repo_branch, commit_history=5,verbosity=0):
 
         self.base_url       = base_url
         self.repo_owner     = repo_owner
