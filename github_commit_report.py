@@ -7,17 +7,19 @@ from github import Github
 from jinja2 import Environment, FileSystemLoader
 import json
 
-class GithubContext(object):
 
+class GithubContext(object):
+    """ This class allow to access commit info from github.
+    Uses  API https://developer.github.com/v3/
+    """
     def __init__(self, base_url, repo_owner, repo_name, repo_branch, commit_history=5, 
-                 template_file='report.html' ,verbosity=0):
+                 ,verbosity=0):
 
         self.base_url       = base_url
         self.repo_owner     = repo_owner
         self.repo_name      = repo_name
         self.repo_branch    = repo_branch
         self.commit_history = commit_history
-        self.template_file  = template_file
 
         self.verbosity=verbosity
 
@@ -68,7 +70,14 @@ class GithubContext(object):
                 
         return items
 
+
 def generate_html_report(items, output_file, template_file):
+    """ This function generates html report
+
+    Parameters:
+    items (list): Each item in the list is a dictionary with keys: sha, author, message 
+    output_file(string): The path for the output file. The file extension '.html' is added to the file
+    template_file(string): The jinja template_file is placed in 'templates' directory  """
 
     # todo , externalize 'templates'
     file_loader=FileSystemLoader('templates')
@@ -82,7 +91,13 @@ def generate_html_report(items, output_file, template_file):
 
 
 def generate_json_report(items, output_file):
+    """ This function generates json report
 
+    Parameters:
+    items (list): Each item in the list is a dictionary with keys: sha, author, message 
+    output_file(string): The path for the output file. The file extension '.json' is added to the file
+
+    """
     with open(output_file + '.json' , 'w') as file:
         json.dump(items, file, indent=4, sort_keys=True)
     
@@ -101,14 +116,14 @@ def main():
     parser.add_argument('-y', '--commit-history',type=int, default=5 , help='The GitHub commits history')
     parser.add_argument('-f', '--output-file', default='output_report', help='Output file w/o extension')
     parser.add_argument('-t', '--template-file', default='report.html', help='Template file name in templates directory.')
-    parser.add_argument('-m', '--format',default='html', nargs='?', choices=['html', 'json'],
+    parser.add_argument('-m', '--format',default='html', choices=['html', 'json'],
                         help='format: html or json (default: %(default)s)')
 
 
     args = parser.parse_args()
 
-    git=GithubContext(base_url=args.base_url, repo_owner=args.repo_owner, repo_name=args.repo_name, \
-                          repo_branch=args.repo_branch, template_file=args.template_file, verbosity=args.verbosity,
+    git=GithubContext(base_url=args.base_url, repo_owner=args.repo_owner, repo_name=args.repo_name,
+                      repo_branch=args.repo_branch, verbosity=args.verbosity,
                       commit_history=args.commit_history)
     items=git.git_commits()
 
@@ -119,7 +134,8 @@ def main():
         generate_html_report(items, args.output_file, args.template_file)
     else:
         generate_json_report(items, args.output_file) 
-    
+
+
 
 if __name__== "__main__":
         main()
