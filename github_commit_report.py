@@ -11,14 +11,15 @@ import json
 class GithubContext(object):
     """ This class allow to access commit info from github.
 
-    Uses  API https://developer.github.com/v3/
+    Uses PyGithub library https://pygithub.readthedocs.io/en/latest/introduction.html
+
     To access the github you need to generate access token and export
     environment variable GITHUB_TOKEN=<your_access_token>
 
     """
     def __init__(self, base_url, repo_owner, repo_name, repo_branch, commit_history=5,verbosity=0):
 
-        self.base_url       = base_url
+        self.base_url       = base_url if base_url.endswith('/') else base_url + '/'
         self.repo_owner     = repo_owner
         self.repo_name      = repo_name
         self.repo_branch    = repo_branch
@@ -33,6 +34,9 @@ class GithubContext(object):
             sys.exit(1)
         return token
 
+    #
+    # returns instance of 'github.Repository.Repository' 
+    #
     def git_repo(self):
 
         if self.base_url != "https://github.com/":
@@ -40,20 +44,23 @@ class GithubContext(object):
         else:
             github = Github(login_or_token=self.token(), per_page=self.commit_history)
 
-        #try:
-        org = github.get_organization(self.repo_owner)
-        repo = org.get_repo(self.repo_name)
-        #except :
-        #    print ('Failed to access to: ' + self.base_url + '/' + self.repo_owner + '/' + self.repo_name)
+        if self.verbosity :             
+            print( 'URL - ' + self.base_url  + self.repo_owner + '/' + self.repo_name )
+
+        repo=github.get_repo( self.repo_owner + '/' + self.repo_name)
 
         return repo
 
+    #
+    # returns list structure, each element of the list is a dictionary with keys: sha, message, author
+    # 
     def git_commits(self):
 
         items = []
 
         repo=self.git_repo()
-        commits=repo.get_commits(sha=self.repo_branch)[:self.commit_history]
+        commits=repo.get_commits(sha=self.repo_branch)[:self.commit_history]  # github.PaginatedList.PaginatedList object
+
         for commit in commits:
             if commit.commit is not None:
                 sha=commit.sha
@@ -64,7 +71,7 @@ class GithubContext(object):
                 an_item=dict ( sha=sha, author=author, message=message ) 
                 items.append(an_item)
 
-                if self.verbosity > 1:
+                if self.verbosity > 2:
                     print('sha: ' + sha)
                     print('message: ' + message)
                     print('author: '  + author)
@@ -133,12 +140,13 @@ def main():
     if args.verbosity: 
         for item in items:  print(item)
 
+
     if args.format == 'html':
         generate_html_report(items, args.output_file, args.template_file)
     else:
         generate_json_report(items, args.output_file) 
 
-
+    print('The report was successfully generated and stored in ' +  args.output_file + '.' + args.format)
 
 if __name__== "__main__":
         main()
