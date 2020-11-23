@@ -2,7 +2,7 @@
 
 Collection of devtools 
 
-github_commit_report.py
+- github_commit_report.py
 
 Installation:
 -------------
@@ -12,10 +12,15 @@ Installation:
 3) pip3 install PyGithub requests
 
 
+Reference:
+
 https://github.com/PyGithub/PyGithub
+
 https://pygithub.readthedocs.io/en/latest/github_objects.html
 
-=== for pytest ===
+Pytest:
+-------
+
 1) pip3 install pytest
 
 
