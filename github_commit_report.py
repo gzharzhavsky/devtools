@@ -8,7 +8,7 @@ from jinja2 import Environment, FileSystemLoader
 import json
 
 
-class GithubContext(object):
+class GithubContext():
     """ This class allow to access commit info from github.
 
     Uses PyGithub library https://pygithub.readthedocs.io/en/latest/introduction.html
@@ -17,7 +17,7 @@ class GithubContext(object):
     environment variable GITHUB_TOKEN=<your_access_token>
 
     """
-    def __init__(self, base_url, repo_owner, repo_name, repo_branch, commit_history=5,verbosity=0):
+    def __init__(self, repo_owner, repo_name, base_url='https://github.com/', repo_branch='master', commit_history=5,verbosity=0):
 
         self.base_url       = base_url if base_url.endswith('/') else base_url + '/'
         self.repo_owner     = repo_owner
@@ -27,12 +27,20 @@ class GithubContext(object):
 
         self.verbosity=verbosity
 
+        self.__token=''
+    
+    @property
     def token(self):
-        token = os.getenv('GITHUB_TOKEN')
-        if not token:
-            print('github token  is missing\n Setup access token and export GITHUB_TOKEN')
-            sys.exit(1)
-        return token
+        if self.__token == '':
+            self.__token = os.getenv('GITHUB_TOKEN')
+            if  not self.__token:
+                raise Exception("The github token  is missing. Setup access token and export GITHUB_TOKEN")
+
+        return self.__token
+
+    @token.setter
+    def token(self, value):
+        self.__token=value
 
     #
     # returns instance of 'github.Repository.Repository' 
@@ -40,9 +48,9 @@ class GithubContext(object):
     def git_repo(self):
 
         if self.base_url != "https://github.com/":
-            github = Github(base_url=self.base_url+'api/v3', login_or_token=self.token(), per_page=self.commit_history)
+            github = Github(base_url=self.base_url+'api/v3', login_or_token=self.token, per_page=self.commit_history)
         else:
-            github = Github(login_or_token=self.token(), per_page=self.commit_history)
+            github = Github(login_or_token=self.token, per_page=self.commit_history)
 
         if self.verbosity :             
             print( 'URL - ' + self.base_url  + self.repo_owner + '/' + self.repo_name )
