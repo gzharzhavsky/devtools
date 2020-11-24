@@ -26,5 +26,6 @@ Pytest:
 2) cd <to_cloned_directory>
 3) export PYTHONPATH=$(pwd)
 4) run pytest
+
    $ pytest -v
 
